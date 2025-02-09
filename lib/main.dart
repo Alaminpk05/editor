@@ -24,13 +24,12 @@ class InteractiveBoxExample extends StatefulWidget {
 class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
   final Map<int, InteractiveBox> interactiveWidgets = {};
   int _nextId = 0;
-
+  String? _selectedFrameImagePath;
   final ImagePicker _picker = ImagePicker();
 
   void _addText() async {
     final TextEditingController _textController = TextEditingController();
 
-    // Show the text input dialog
     await showDialog(
       context: context,
       builder: (context) {
@@ -43,14 +42,13 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
               },
               child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 if (_textController.text.isNotEmpty) {
-                  // Add the text as an interactive box
                   _addInteractiveBox(
                     child: Container(
                       padding: EdgeInsets.all(8),
@@ -63,7 +61,7 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
                       ),
                     ),
                   );
-                  Navigator.pop(context); // Close the dialog
+                  Navigator.pop(context);
                 }
               },
               child: Text('Add'),
@@ -103,6 +101,8 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
   }
 
   void _addInteractiveBox({required Widget child}) {
+    if (_selectedFrameImagePath == null) return;
+
     setState(() {
       int id = _nextId++;
       interactiveWidgets[id] = InteractiveBox(
@@ -160,16 +160,55 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
     });
   }
 
+  void _selectFrame(String imagePath) {
+    setState(() {
+      _selectedFrameImagePath = imagePath;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Interactive Box Example'),
       ),
-      body: Stack(
-        children: [
-          ...interactiveWidgets.values,
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Add widgets behind the frame
+                  ...interactiveWidgets.values,
+        
+                  // Add the frame on top
+                  if (_selectedFrameImagePath != null)
+                    Center(
+                      child: ClipRect(
+                        child: Image.asset(
+                          _selectedFrameImagePath!,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Container(
+              height: 100,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _buildFrameOption('lib/assets/1.webp'),
+                  _buildFrameOption('lib/assets/2.webp'),
+                  _buildFrameOption('lib/assets/3.webp'),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -183,24 +222,24 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
                     leading: Icon(Icons.text_fields),
                     title: Text('Add Text'),
                     onTap: () {
-                      Navigator.pop(context); // Close the bottom sheet
-                      _addText(); // Open the text dialog
+                      Navigator.pop(context);
+                      _addText();
                     },
                   ),
                   ListTile(
                     leading: Icon(Icons.image),
                     title: Text('Add Image'),
                     onTap: () {
-                      Navigator.pop(context); // Close the bottom sheet
-                      _addImage(); // Open the image picker
+                      Navigator.pop(context);
+                      _addImage();
                     },
                   ),
                   ListTile(
                     leading: Icon(Icons.widgets),
                     title: Text('Add Container'),
                     onTap: () {
-                      Navigator.pop(context); // Close the bottom sheet
-                      _addContainer(); // Add a container
+                      Navigator.pop(context);
+                      _addContainer();
                     },
                   ),
                 ],
@@ -209,6 +248,27 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
           );
         },
         child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildFrameOption(String imagePath) {
+    return GestureDetector(
+      onTap: () => _selectFrame(imagePath),
+      child: Container(
+        margin: EdgeInsets.all(8),
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: _selectedFrameImagePath == imagePath ? Colors.blue : Colors.grey,
+            width: 2,
+          ),
+        ),
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }

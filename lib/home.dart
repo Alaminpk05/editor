@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:interactive_box/interactive_box.dart';
 
@@ -172,6 +174,10 @@ class _FrameEditorScreenState extends State<FrameEditorScreen> {
       ),
       body: Column(
         children: [
+
+
+
+        
           // Frame selection bar
           Container(
             height: 60,
