@@ -1,6 +1,7 @@
-import 'package:editor/home.dart';
 import 'package:flutter/material.dart';
 import 'package:interactive_box/interactive_box.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 void main() {
   runApp(MyApp());
@@ -21,13 +22,88 @@ class InteractiveBoxExample extends StatefulWidget {
 }
 
 class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
-  // Map to store InteractiveBox widgets with unique IDs
   final Map<int, InteractiveBox> interactiveWidgets = {};
-  int _nextId = 0; // Counter for generating unique IDs
+  int _nextId = 0;
 
-  void _addInteractiveBox() {
+  final ImagePicker _picker = ImagePicker();
+
+  void _addText() async {
+    final TextEditingController _textController = TextEditingController();
+
+    // Show the text input dialog
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add Text'),
+          content: TextField(
+            controller: _textController,
+            decoration: InputDecoration(hintText: 'Enter text'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (_textController.text.isNotEmpty) {
+                  // Add the text as an interactive box
+                  _addInteractiveBox(
+                    child: Container(
+                      padding: EdgeInsets.all(8),
+                      color: Colors.transparent,
+                      child: Center(
+                        child: Text(
+                          _textController.text,
+                          style: TextStyle(color: Colors.black, fontSize: 20),
+                        ),
+                      ),
+                    ),
+                  );
+                  Navigator.pop(context); // Close the dialog
+                }
+              },
+              child: Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _addImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      _addInteractiveBox(
+        child: Image.file(
+          File(image.path),
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+  }
+
+  void _addContainer() {
+    _addInteractiveBox(
+      child: Container(
+        width: 100,
+        height: 100,
+        color: Colors.blue,
+        child: Center(
+          child: Text(
+            'Box ${_nextId + 1}',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _addInteractiveBox({required Widget child}) {
     setState(() {
-      // Create a new InteractiveBox with a unique ID
       int id = _nextId++;
       interactiveWidgets[id] = InteractiveBox(
         key: UniqueKey(),
@@ -46,31 +122,19 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
             _copyInteractiveBox(id);
           }
         },
-        child: Container(
-          width: 100,
-          height: 100,
-          color: Colors.blue,
-          child: Center(
-            child: Text(
-              'Box ${id + 1}',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ),
+        child: child,
       );
     });
   }
 
   void _deleteInteractiveBox(int id) {
     setState(() {
-      // Remove the widget with the specified ID
       interactiveWidgets.remove(id);
     });
   }
 
   void _copyInteractiveBox(int id) {
     setState(() {
-      // Find the widget with the specified ID and create a copy
       if (interactiveWidgets.containsKey(id)) {
         int newId = _nextId++;
         interactiveWidgets[newId] = InteractiveBox(
@@ -90,17 +154,7 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
               _copyInteractiveBox(newId);
             }
           },
-          child: Container(
-            width: 100,
-            height: 100,
-            color: Colors.blue,
-            child: Center(
-              child: Text(
-                'Box ${newId + 1}',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
+          child: interactiveWidgets[id]!.child,
         );
       }
     });
@@ -114,11 +168,46 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
       ),
       body: Stack(
         children: [
-          ...interactiveWidgets.values, // Render all InteractiveBox widgets
+          ...interactiveWidgets.values,
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _addInteractiveBox,
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            builder: (context) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.text_fields),
+                    title: Text('Add Text'),
+                    onTap: () {
+                      Navigator.pop(context); // Close the bottom sheet
+                      _addText(); // Open the text dialog
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.image),
+                    title: Text('Add Image'),
+                    onTap: () {
+                      Navigator.pop(context); // Close the bottom sheet
+                      _addImage(); // Open the image picker
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.widgets),
+                    title: Text('Add Container'),
+                    onTap: () {
+                      Navigator.pop(context); // Close the bottom sheet
+                      _addContainer(); // Add a container
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        },
         child: Icon(Icons.add),
       ),
     );
