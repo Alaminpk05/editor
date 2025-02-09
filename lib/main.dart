@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:interactive_box/interactive_box.dart';
 import 'package:image_picker/image_picker.dart';
@@ -24,7 +25,7 @@ class InteractiveBoxExample extends StatefulWidget {
 class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
   final Map<int, InteractiveBox> interactiveWidgets = {};
   int _nextId = 0;
-  String? _selectedFrameImagePath;
+  String? _selectedFrameImagePath ;
   final ImagePicker _picker = ImagePicker();
 
   void _addText() async {
@@ -169,86 +170,116 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
+      
       appBar: AppBar(
-        title: Text('Interactive Box Example'),
+        title: Text('Kids Image Editor'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Add widgets behind the frame
-                  ...interactiveWidgets.values,
-        
-                  // Add the frame on top
-                  if (_selectedFrameImagePath != null)
-                    Center(
-                      child: ClipRect(
-                        child: Image.asset(
-                          _selectedFrameImagePath!,
-                          fit: BoxFit.cover,
-                        ),
+        padding: const EdgeInsets.all(10),
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Container(
+                  clipBehavior: Clip.hardEdge,
+                  padding: EdgeInsets.zero,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage(
+                            _selectedFrameImagePath??' ',
+                          ),
+                          fit: BoxFit.fill)),
+                  child: Center(
+                    child: Container(
+                    
+                      margin:
+                          EdgeInsets.symmetric(horizontal: 60, vertical: 90),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                         color: Colors.transparent,
+                          borderRadius: BorderRadiusDirectional.circular(80)),
+                      alignment: Alignment.center,
+                      width: double.infinity,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          ...interactiveWidgets.values,
+                        ],
                       ),
                     ),
-                ],
+                  ),
+                ),
               ),
-            ),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Container(
+              alignment: Alignment.center,
+              margin: EdgeInsets.all(10),
               height: 100,
               child: ListView(
+                shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
                 children: [
-                  _buildFrameOption('lib/assets/1.png'),
+                  // _buildFrameOption('lib/assets/1.png'),
                   _buildFrameOption('lib/assets/2.png'),
                   _buildFrameOption('lib/assets/3.png'),
                 ],
               ),
             ),
+            FloatingActionButton(
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: Icon(Icons.text_fields),
+                      title: Text('Add Text'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _addText();
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.image),
+                      title: Text('Add Image'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _addImage();
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.widgets),
+                      title: Text('Add Container'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _addContainer();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+          child: Icon(Icons.add),
+        ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            builder: (context) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ListTile(
-                    leading: Icon(Icons.text_fields),
-                    title: Text('Add Text'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _addText();
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.image),
-                    title: Text('Add Image'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _addImage();
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.widgets),
-                    title: Text('Add Container'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _addContainer();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        },
-        child: Icon(Icons.add),
-      ),
+       
     );
   }
 
@@ -261,7 +292,9 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
         height: 80,
         decoration: BoxDecoration(
           border: Border.all(
-            color: _selectedFrameImagePath == imagePath ? Colors.blue : Colors.grey,
+            color: _selectedFrameImagePath == imagePath
+                ? Colors.blue
+                : Colors.grey,
             width: 2,
           ),
         ),
