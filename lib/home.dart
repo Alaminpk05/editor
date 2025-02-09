@@ -3,22 +3,22 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:interactive_box/interactive_box.dart';
 
-void main() {
-  runApp(MyApp());
-}
+// void main() {
+//   runApp(MyApp());
+// }
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Frame Editor',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: FrameEditorScreen(),
-    );
-  }
-}
+// class MyApp extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Frame Editor',
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//       ),
+//       home: FrameEditorScreen(),
+//     );
+//   }
+// }
 
 class FrameEditorScreen extends StatefulWidget {
   @override
@@ -81,6 +81,39 @@ class _FrameEditorScreenState extends State<FrameEditorScreen> {
   void _deleteFrame(int id) {
     setState(() {
       interactiveWidgets.remove(id);
+    });
+  }
+
+  // Function to update all frames with the selected frame color
+  void _updateFrames() {
+    setState(() {
+      interactiveWidgets.forEach((id, interactiveBox) {
+        interactiveWidgets[id] = InteractiveBox(
+          key: UniqueKey(),
+          initialSize: Size(200, 200),
+          includedActions: [
+            ControlActionType.delete,
+            ControlActionType.rotate,
+            ControlActionType.scale,
+            ControlActionType.copy,
+            ControlActionType.move,
+          ],
+          onActionSelected: (actionType, info) {
+            if (actionType == ControlActionType.delete) {
+              _deleteFrame(id);
+            }
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: frames[selectedFrameIndex],
+              border: Border.all(color: Colors.black, width: 2),
+            ),
+            child: Center(
+              child: interactiveBox.child,
+            ),
+          ),
+        );
+      });
     });
   }
 
@@ -174,10 +207,6 @@ class _FrameEditorScreenState extends State<FrameEditorScreen> {
       ),
       body: Column(
         children: [
-
-
-
-        
           // Frame selection bar
           Container(
             height: 60,
@@ -189,6 +218,7 @@ class _FrameEditorScreenState extends State<FrameEditorScreen> {
                   onTap: () {
                     setState(() {
                       selectedFrameIndex = index;
+                      _updateFrames(); // Update all frames with the new color
                     });
                   },
                   child: Container(

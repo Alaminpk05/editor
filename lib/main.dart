@@ -201,9 +201,9 @@ class _InteractiveBoxExampleState extends State<InteractiveBoxExample> {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  _buildFrameOption('lib/assets/1.webp'),
-                  _buildFrameOption('lib/assets/2.webp'),
-                  _buildFrameOption('lib/assets/3.webp'),
+                  _buildFrameOption('lib/assets/1.png'),
+                  _buildFrameOption('lib/assets/2.png'),
+                  _buildFrameOption('lib/assets/3.png'),
                 ],
               ),
             ),
